@@ -5,13 +5,15 @@
 #include <ctype.h>
 #include <stdint.h>
 
+#include "chip-8.h"
+
 // CHIP-8 Interpreter ^^
 // Notes:
 // Use SDL when doing graphical stuff and detecting keypresses.
 
 /* Variable Initializations */
 int memory[4096] = {0}; // 4KB of memory
-struct registers = { // Looooots of registers. V0-VF are general purpose.
+struct registers { // Looooots of registers. V0-VF are general purpose.
 	uint8_t V0;
 	uint8_t V1;
 	uint8_t V2;
