@@ -5,11 +5,11 @@
 #include <ctype.h>
 #include <stdint.h>
 
-// CHIP-8 Emulator ^^
+// CHIP-8 Interpreter ^^
 // Notes:
 // Use SDL when doing graphical stuff and detecting keypresses.
 
-/* Initializations */
+/* Variable Initializations */
 int memory[4096] = {0}; // 4KB of memory
 struct registers = { // Looooots of registers. V0-VF are general purpose.
 	uint8_t V0;
@@ -39,8 +39,33 @@ uint16_t stack[16] = {0}; // Stack has space for 16 entries for 16-bit addresses
 uint8_t delay_timer = 0; // General purpose countdown timer
 uint8_t sound_timer = 0; // Countdown timer that also triggers a beep as long as its > 0
 
-// (Code for loading font data to memory goes here)
-
+// Font Data:
+// Each hexadecimal digit is a 8 x 5 sprite.
+// Consider a "0": 
+// ****      (binary: 11110000 = 0xF0)
+// *  *      (binary: 10010000 = 0x90)
+// *  *      (binary: 10010000 = 0x90)
+// *  *      (binary: 10010000 = 0x90)
+// ****      (binary: 11110000 = 0xF0)
+// In CHIP-8, the font data is provided by the interpreter. This will be loaded into memory at addresses 0x050 to 0x09F.
+uint8_t font[80] = {
+	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+	0x20, 0x60, 0x20, 0x20, 0x70, // 1
+	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+	0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+	0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+	0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+	0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+	0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+	0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+	0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+	0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+	0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+	0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+	0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+};
 
 // Display Buffer - When instructions draw sprites, this buffer is modified. Then this buffer is rendered.
 int display_buffer[64][32] = {0};
