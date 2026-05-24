@@ -57,3 +57,36 @@ int setup_state() {
 	return 0;
 }
 
+/* Opens a .ch8 file based on a given file_name */
+// might wanna make this a bit more secure down the line since strings in C are a bit interesting...
+int open_rom(char file_name[]) {
+	// For the time being, only open up /tests/1-chip8-logo.ch8
+	
+	FILE* rom = fopen("./tests/1-chip8-logo.ch8", "rb");
+	if (rom == NULL) {
+		printf("File read error");
+	}
+	fseek(rom, 0L, SEEK_END);
+	long rom_size = ftell(rom); // size in bytes
+	fseek(rom, 0L, SEEK_SET);
+	printf("Rom size in bytes: %ld\n", rom_size);
+	uint8_t* buffer = malloc(rom_size);
+	if (buffer == NULL) {
+		printf("Error on malloc");
+		return -1;
+	}
+	size_t chars_read = fread(buffer, 1, rom_size, rom);
+	printf("Read %zu chars\n", chars_read);
+	// Read the first 32 bytes of the ROM (if needed)
+	for (int i = 0; i < 32 && i < chars_read; i++) {
+		printf("%02x ", buffer[i]);
+		if ((i + 1) % 16 == 0) printf("\n");  // New line every 16 bytes
+	}
+	printf("\n");
+	memcpy(&c8_state.memory[0x200], buffer, rom_size);
+	//printf("%02x\n", c8_state.memory[0x200]); // print the first byte
+
+	free(buffer);
+	fclose(rom);
+	return 0;
+}
