@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
+CFLAGS = -Wall -Wextra -std=c11 -g
 
 chip-8: main.o chip-8.o
 	$(CC) $(CFLAGS) -o chip-8 main.o chip-8.o

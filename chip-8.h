@@ -31,4 +31,25 @@ int setup_state();
 
 // Loads a rom based on a file_name in the ./tests/ directory
 int open_rom(char file_name[]);
+
+
+// Increments the PC by 2 since on each fetch, 2 values are read
+void increment_pc();	
+
+// Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
+uint16_t fetch();
+
+// Decodes a given instruction
+/*
+  Generally, CHIP-8 instructions are divided into broad categories based on the first "nibble" of the instruction, or the first hexadecimal number. 
+
+  Meanings for the other hex numbers of the instruction:
+    X: The second hex number - used to look up one of the 16 registers (VX) from V0 through VF. (remember to use this number JUST to look up the register number, and not as a value itself!)
+    Y: The third hex number - used to look up one of the 16 registers (VX) from V0 through VF.  (see above note)
+    N: The fourth hex number - a 4-bit number.
+    NN: The third and fourth hex number - a 8-bit number used in immediates.
+    NNN: The second, third, and fourth hex number - a 12-bit number used in immediate memory addressing.
+
+*/
+uint16_t decode(uint16_t instr); 
 #endif

@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "chip-8.h"
 
@@ -76,11 +77,19 @@ int open_rom(char file_name[]) {
 		return -1;
 	}
 	size_t chars_read = fread(buffer, 1, rom_size, rom);
-	printf("Read %zu chars\n", chars_read);
-	// Read the first 32 bytes of the ROM (if needed)
-	for (int i = 0; i < 32 && i < chars_read; i++) {
-		printf("%02x ", buffer[i]);
-		if ((i + 1) % 16 == 0) printf("\n");  // New line every 16 bytes
+	printf("Read %zu chars from the file\n", chars_read);
+	
+	// Display the instructions of the ROM (if needed)
+	printf("Read from left to right, going downwards: \n");
+	int cols = 0;
+	for (int i = 0; i < rom_size && i < chars_read; i += 2) {
+		uint16_t instr = (buffer[i] << 8) | (buffer[i + 1]);
+		printf("%04X ", instr);
+		cols += 1;
+		if (cols == 8) {
+			printf("\n");
+			cols = 0;
+		}
 	}
 	printf("\n");
 	memcpy(&c8_state.memory[0x200], buffer, rom_size);
@@ -89,4 +98,121 @@ int open_rom(char file_name[]) {
 	free(buffer);
 	fclose(rom);
 	return 0;
+}
+
+// Increments the PC by 2 since on each fetch, 2 values are read
+void increment_pc() {	
+	c8_state.PC = c8_state.PC + 2; 
+}
+
+// Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
+uint16_t fetch() {
+	// Each instruction is 2 bytes (16 bits), so we will need to fetch two entries from memory
+	uint16_t instr = (c8_state.memory[c8_state.PC] << 8) | (c8_state.memory[c8_state.PC + 1]); // shift left by 8 bits to make room for both fetches from memory
+	return instr;
+	//Display the fetched instruction (if needed)
+	//printf("PC = 0x%03X\n", c8_state.PC);
+	//printf("memory[PC] = 0x%02X\n", c8_state.memory[c8_state.PC]);
+	//printf("memory[PC+1] = 0x%02X\n", c8_state.memory[c8_state.PC + 1]);
+	//uint16_t instr = (c8_state.memory[c8_state.PC] << 8) | 
+                 //(c8_state.memory[c8_state.PC + 1]);
+		 //printf("Fetched instruction = 0x%04X\n", instr);
+
+}
+
+// Decodes a given instruction
+/*
+  Generally, CHIP-8 instructions are divided into broad categories based on the first hexadecimal value of the instruction.
+
+  Meanings for the other hex numbers of the instruction:
+    X: The second hex number - used to look up one of the 16 registers (VX) from V0 through VF. (remember to use this number JUST to look up the register number, and not as a value itself!)
+    Y: The third hex number - used to look up one of the 16 registers (VX) from V0 through VF.  (see above note)
+    N: The fourth hex number - a 4-bit number.
+    NN: The third and fourth hex number - a 8-bit number used in immediates.
+    NNN: The second, third, and fourth hex number - a 12-bit number used in immediate memory addressing.
+
+*/
+uint16_t decode(uint16_t instr) {
+	uint8_t X = (instr & 0x0F00) >> 8;
+	uint8_t Y = (instr & 0x00F0) >> 4;
+	uint8_t N = (instr & 0x000F);
+	uint8_t NN = (instr & 0x00FF);
+	uint16_t NNN = (instr & 0x0FFF);
+
+	switch (instr >> 12) {
+		case 0x0: // Clear or return from subroutine
+		  if (instr == 0x00E0) {
+		  	printf("Clear screen instruction \n");
+		  }
+		  else if (instr == 0x00EE) {
+		  	printf("Return from subroutine instruction \n");
+		  }
+		  else {
+		  	printf("Unknown instruction \n");
+		  }
+		  break;
+		case 0x1: // Jump 
+		  printf("Jump instruction \n");
+		  break;
+		case 0x2: // Call subroutine
+		  printf("Call subroutine instruction \n");
+		  break;
+
+		case 0x3: // Skip conditionally
+		  printf("Skip conditionally instruction (0x3XNN) \n");
+		  break;
+		case 0x4: // Skip conditionally
+		  printf("Skip condtionally instruction (0x4XNN) \n");
+		  break;
+		case 0x5: // Skip conditionally
+		  printf("Skip conditionally instruction (0x5XY0) \n");
+		  break;
+		case 0x9: // Skip conditionally
+		  printf("Skip conditionally instruction (0x9XY0) \n");
+		  break;
+
+		case 0x6: // Set
+		  printf("Set instruction with NN \n");
+		  break;
+		case 0x7: // Add
+		  printf("Add instruction with NN \n");
+		  break;
+		case 0x8: // Logical/Arithmetic
+		  switch (N) {
+		  	case 0:
+			  printf("Set instruction with X and Y \n");
+			  break;
+			case 1:
+			  printf("Binary OR instruction \n");
+			  break;
+			case 2:
+			  printf("Binary AND instruction \n");
+			  break;
+			case 3:		
+			  printf("Logical XOR instruction \n");
+			  break;
+			case 4:
+			  printf("Add instruction with X and Y \n");
+			  break;
+
+			case 5:
+			  printf("Subtract instruction: VX = VX - VY \n");
+			  break;
+			case 7:
+			  printf("Subtract instruction: VX = VY - VX \n");
+			  break;
+
+			case 6: // look more into this later
+			  printf("Shift instruction \n");
+			  break;
+			case 'E': // look more into this later
+			  printf("Shift instruction \n");
+			  break;
+		  }
+		  break;
+
+		default:
+		  printf("Unknown instruction: %04X \n, instr");
+	}
+	return 0;	
 }
