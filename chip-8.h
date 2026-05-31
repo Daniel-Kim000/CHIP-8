@@ -51,5 +51,5 @@ uint16_t fetch();
     NNN: The second, third, and fourth hex number - a 12-bit number used in immediate memory addressing.
 
 */
-uint16_t decode(uint16_t instr); 
+uint16_t decode_and_exec(uint16_t instr); 
 #endif

@@ -132,7 +132,7 @@ uint16_t fetch() {
     NNN: The second, third, and fourth hex number - a 12-bit number used in immediate memory addressing.
 
 */
-uint16_t decode(uint16_t instr) {
+uint16_t decode_and_exec(uint16_t instr) {
 	uint8_t X = (instr & 0x0F00) >> 8;
 	uint8_t Y = (instr & 0x00F0) >> 4;
 	uint8_t N = (instr & 0x000F);
@@ -142,7 +142,13 @@ uint16_t decode(uint16_t instr) {
 	switch (instr >> 12) {
 		case 0x0: // Clear or return from subroutine
 		  if (instr == 0x00E0) {
-		  	printf("Clear screen instruction \n");
+		  	// Zero out all values in the display buffer
+		  	// printf("Clear screen instruction \n");
+			for (int i = 0; i < 64; i++) {
+			  for (int j = 0; j < 32; j++) {
+			    c8_state.display_buffer[i][j] = 0;
+			  }
+			}
 		  }
 		  else if (instr == 0x00EE) {
 		  	printf("Return from subroutine instruction \n");
@@ -151,8 +157,10 @@ uint16_t decode(uint16_t instr) {
 		  	printf("Unknown instruction \n");
 		  }
 		  break;
-		case 0x1: // Jump 
-		  printf("Jump instruction \n");
+		case 0x1: // Jump
+		  // Set PC = NNN
+		  // printf("Jump instruction \n");
+		  c8_state.PC = NNN;
 		  break;
 		case 0x2: // Call subroutine
 		  printf("Call subroutine instruction \n");
@@ -172,10 +180,14 @@ uint16_t decode(uint16_t instr) {
 		  break;
 
 		case 0x6: // Set
-		  printf("Set instruction with NN \n");
+		  // Sets the value at VX to the value NN
+		  // printf("Set instruction with NN \n");
+		  c8_state.V_regs[X] = NN;
 		  break;
 		case 0x7: // Add
-		  printf("Add instruction with NN \n");
+		  // Adds the value at VX with NN
+		  // printf("Add instruction with NN \n");
+		  c8_state.V_regs[X] += NN;
 		  break;
 		case 0x8: // Logical/Arithmetic
 		  switch (N) {
@@ -211,7 +223,9 @@ uint16_t decode(uint16_t instr) {
 		  }
 		  break;
 		case 0xA:
-		  printf("Set index instruction \n");
+		  // Sets the index register I to the value NNN
+		  // printf("Set index instruction \n");
+		  c8_state.I_reg = NNN;
 		  break;
 		/* Ambiguous instruction: */
 		case 0xB:
@@ -220,8 +234,33 @@ uint16_t decode(uint16_t instr) {
 		case 0xC:
 		  printf("Random number generator instruction \n");
 		  break;
-		case 0xD:
-		  printf("Display control instruction \n");
+		case 0xD: // DXYN
+		  /*
+		     Draws a sprite N pixels tall.
+		     The sprite is read from starting at index register I.
+		     Draws the sprite at screen coordinates (V[X], V[Y]).
+		     Each sprite pixel is XOR'd with the display buffer
+		     Set VF = 1 if any pixels became turned off - collision detection
+		     Be sure to allow coordinates to wrap: an X coordinate of 4 is equal to an X coordinate of 68 (because 68 % 64 = 4)
+		     The sprite should not wrap around if it goes beyond the border, it should just be clipped
+		  */
+		  // printf("Display control instruction \n");
+		  uint8_t X_coord = c8_state.V_regs[X] % 64;
+		  uint8_t Y_coord = c8_state.V_regs[Y] % 32;
+		  c8_state.V_regs[15] = 0; // Set the VF flag to 0; doing so will make it obvious if it was raised in this instruction
+		  for (int i = 0; i < N; i++) {  // Fetch the sprite data from memory[I + 0] to memory[I + N-1]
+			uint8_t sprite_data = c8_state.memory[c8_state.I_reg + i]; // Each sprite is 8 bits - every bit of this variable counts!
+			for (int j = 0; j < 8; j++) { // Iterate over all 8 bits of a row of the sprite
+				uint8_t sprite_pixel = (sprite_data >> (7 - j)) & 1; // extract a bit of this sprite, from left to right
+				if ((sprite_pixel == 1) && c8_state.display_buffer[X_coord][Y_coord]) { // If the the current pixel in the sprite row is on and the pixel at (X,Y) in the display buffer is on,
+											       // then turn off the pixel and VF = 1
+					c8_state.display_buffer[X_coord][Y_coord] = 0;
+					c8_state.V_regs[15] = 1;
+				}
+				//if (c8_state.display_buffer[i][j] == 1 && 
+				//c8_state.display_buffer[i][j] = c8_state.display_buffer[i][j] ^ 
+			}
+		  }
 		  break;
 		case 0xE:
 		  switch (NN) {
@@ -269,7 +308,7 @@ uint16_t decode(uint16_t instr) {
 		  }
 		  break;
 		default:
-		  printf("Unknown instruction: %04X \n, instr");
+		  printf("Unknown instruction: %04X\n, instr");
 	}
 	return 0;	
 }

@@ -17,7 +17,7 @@ int main(void) {
 		uint16_t instr = fetch();
 		printf("Fetched Instruction: %04X \n", instr);
 		increment_pc();		
-		decode(instr);
+		decode_and_exec(instr);
 		running = false; // only here for now
 	}
 	return 0;
