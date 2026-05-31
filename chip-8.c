@@ -201,16 +201,73 @@ uint16_t decode(uint16_t instr) {
 			case 7:
 			  printf("Subtract instruction: VX = VY - VX \n");
 			  break;
-
+			/* Ambiguous instructions: */
 			case 6: // look more into this later
 			  printf("Shift instruction \n");
 			  break;
-			case 'E': // look more into this later
+			case 0xE: // look more into this later
 			  printf("Shift instruction \n");
 			  break;
 		  }
 		  break;
+		case 0xA:
+		  printf("Set index instruction \n");
+		  break;
+		/* Ambiguous instruction: */
+		case 0xB:
+		  printf("Jump with offset instruction \n");
+		  break;
+		case 0xC:
+		  printf("Random number generator instruction \n");
+		  break;
+		case 0xD:
+		  printf("Display control instruction \n");
+		  break;
+		case 0xE:
+		  switch (NN) {
+			case 0x9E:
+			  printf("Skip instruction if key corresponding to VX's value is pressed");
+			  break;
+			case 0xA1:
+			  printf("Skip instruction if key corresponding to VX's value is not pressed");
+			  break;
+		  }
+		  break;
+		case 0xF:
+		  switch (NN) {
+		  	/* Timer manipulation instructions */
+		  	case 0x07:
+			  printf("Set VX to the current value of the delay timer");
+			  break;
+			case 0x15:
+			  printf("Set the delay timer to the value in VX");
+			  break;
+			case 0x18:
+			  printf("Set the sound timer to the value in VX");
+			  break;
 
+			case 0x1E:
+			  printf("Add to index instruction");
+			  break;
+			case 0x0A:
+			  printf("Get key instruction");
+			  break;
+			case 0x29:
+			  printf("Font character instruction");
+			  break;
+			case 0x33:
+			  printf("Binary-coded decimal conversion instruction");
+			  break;
+			
+			/* Ambiguous instructions */
+			case 0x55:
+			  printf("Store instruction");
+			  break;
+			case 0x65:
+			  printf("Load instruction");
+			  break;
+		  }
+		  break;
 		default:
 		  printf("Unknown instruction: %04X \n, instr");
 	}
