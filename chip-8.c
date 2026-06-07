@@ -323,8 +323,13 @@ uint16_t decode_and_exec(uint16_t instr) {
 		  break;
 		case 0xE:
 		  switch (NN) {
-			case 0x9E:
-			  printf("Skip instruction if key corresponding to VX's value is pressed");
+			case 0x9E: // EX9E
+			  // Skip the next instruction if the key corresponding to VX's value is pressed
+			  //printf("Skip instruction if key corresponding to VX's value is pressed");
+			  uint8_t key = c8_state.V_regs[X] & 0x0F; // Done so we can make sure that whatever the keypress is, its some number from 0 to 15
+			  if (c8_state.input[key]) {
+			  	increment_pc();
+			  }
 			  break;
 			case 0xA1:
 			  printf("Skip instruction if key corresponding to VX's value is not pressed");
@@ -361,9 +366,9 @@ uint16_t decode_and_exec(uint16_t instr) {
 			    123 % 10 = 3        -> memory[I + 2]
 			  */
 			  //printf("Binary-coded decimal conversion instruction");
-			  c8_state.memory[c8_state.I_reg] = c8_state.V_reg[X] / 100;
-			  c8_state.memory[c8_state.I_reg + 1] = (c8_state.V_reg[X] / 10) % 10;
-			  c8_state.memory[c8_state.I_reg + 2] = c8_state.V_reg[X] % 10;
+			  c8_state.memory[c8_state.I_reg] = c8_state.V_regs[X] / 100;
+			  c8_state.memory[c8_state.I_reg + 1] = (c8_state.V_regs[X] / 10) % 10;
+			  c8_state.memory[c8_state.I_reg + 2] = c8_state.V_regs[X] % 10;
 			  break;
 			
 			/* Ambiguous instructions */
@@ -371,14 +376,14 @@ uint16_t decode_and_exec(uint16_t instr) {
 			  // Store the value of each variable register from V0 to VX inclusive in contiguous memory addresses starting from I.
 			  //printf("Store instruction");
 			  for (int i = 0; i <= X; i++) {
-			  	c8_state.memory[c8_state.I_reg + i] = c8_state.V_reg[i];
+			  	c8_state.memory[c8_state.I_reg + i] = c8_state.V_regs[i];
 			  }
 			  break;
 			case 0x65: // FX65 - Different behavior on the COSMAC VIP
 			  // Read values from memory and load them into variable registers from V0 to VX inclusive
 			  //printf("Load instruction");
 			  for (int i = 0; i <= X; i++) {
-			  	c8_state.V_reg[i] = c8_state.memory[c8_state.I_reg + i];
+			  	c8_state.V_regs[i] = c8_state.memory[c8_state.I_reg + i];
 			  }
 			  break;
 		  }
