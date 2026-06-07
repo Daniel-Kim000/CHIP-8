@@ -214,20 +214,33 @@ uint16_t decode_and_exec(uint16_t instr) {
 		  break;
 		case 0x8: // Logical/Arithmetic
 		  switch (N) {
-		  	case 0:
-			  printf("Set instruction with X and Y \n");
+		  	case 0: // 8XY0
+			  //printf("Set instruction with X and Y \n");
+			  c8_state.V_regs[X] = c8_state.V_regs[Y];
 			  break;
-			case 1:
-			  printf("Binary OR instruction \n");
+			case 1: // 8XY1
+			  //printf("Binary OR instruction \n");
+			  c8_state.V_regs[X] = c8_state.V_regs[X] | c8_state.V_regs[Y];
 			  break;
-			case 2:
-			  printf("Binary AND instruction \n");
+			case 2: // 8XY2
+			  //printf("Binary AND instruction \n");
+			  c8_state.V_regs[X] = c8_state.V_regs[X] & c8_state.V_regs[Y];
 			  break;
-			case 3:		
-			  printf("Logical XOR instruction \n");
+			case 3:	// 8XY3
+			  //printf("Binary XOR instruction \n");
+			  c8_state.V_regs[X] = c8_state.V_regs[X] ^ c8_state.V_regs[Y];
 			  break;
-			case 4:
-			  printf("Add instruction with X and Y \n");
+			case 4: // 8XY4
+			  // If the result of adding these two registers exceeds the 8-bit integer limit of 255, set the flag register to 1
+			  //printf("Add instruction with X and Y \n");
+			  int result = c8_state.V_regs[X] + c8_state.V_regs[Y];
+			  if (result > 255) { 
+			  	c8_state.V_regs[15] = 1;
+			  }
+			  else {
+			  	c8_state.V_regs[15] = 0;
+			  }
+			  c8_state.V_regs[X] = c8_state.V_regs[X] + c8_state.V_regs[Y];
 			  break;
 
 			case 5:
