@@ -151,35 +151,55 @@ uint16_t decode_and_exec(uint16_t instr) {
 			}
 		  }
 		  else if (instr == 0x00EE) {
-		  	printf("Return from subroutine instruction \n");
+		  	// Reduce the SP by 1 and then pop the last address from the stack and set that to PC
+		  	//printf("Return from subroutine instruction \n");
+			c8_state.SP = c8_state.SP - 1;
+			c8_state.PC = c8_state.stack[c8_state.SP];
 		  }
 		  else {
 		  	printf("Unknown instruction \n");
 		  }
 		  break;
-		case 0x1: // Jump
+		case 0x1: // Jump: 1NNN
 		  // Set PC = NNN
 		  // printf("Jump instruction \n");
 		  c8_state.PC = NNN;
 		  break;
-		case 0x2: // Call subroutine
+		case 0x2: // Call subroutine: 2NNN
 		  // Push PC to the stack and then set PC = NNN
 		  //printf("Call subroutine instruction \n");
-		  
-
+		  c8_state.stack[c8_state.SP] = c8_state.PC;
+		  c8_state.SP = c8_state.SP + 1;
+		  c8_state.PC = NNN;
 		  break;
 
-		case 0x3: // Skip conditionally
-		  printf("Skip conditionally instruction (0x3XNN) \n");
+		case 0x3: // Skip conditionally: 3XNN
+		  // Skip if VX == NN
+		  //printf("Skip conditionally instruction (0x3XNN) \n");
+		  if (c8_state.V_regs[X] == NN) {
+		  	increment_pc();
+		  }
 		  break;
-		case 0x4: // Skip conditionally
-		  printf("Skip condtionally instruction (0x4XNN) \n");
+		case 0x4: // Skip conditionally: 4XNN
+		  // Skip if VX != NN
+		  //printf("Skip condtionally instruction (0x4XNN) \n");
+		  if (c8_state.V_regs[X] != NN) {
+		  	increment_pc();
+		  }
 		  break;
-		case 0x5: // Skip conditionally
-		  printf("Skip conditionally instruction (0x5XY0) \n");
+		case 0x5: // Skip conditionally: 5XY0
+		  // Skip if VX == VY
+		  //printf("Skip conditionally instruction (0x5XY0) \n");
+		  if (c8_state.V_regs[X] == c8_state.V_regs[Y]) {
+		  	increment_pc();
+		  }
 		  break;
-		case 0x9: // Skip conditionally
-		  printf("Skip conditionally instruction (0x9XY0) \n");
+		case 0x9: // Skip conditionally: 9XY0
+		  // Skip if VX != VY
+		  //printf("Skip conditionally instruction (0x9XY0) \n");
+		  if (c8_state.V_regs[X] != c8_state.V_regs[Y]) {
+	  	  	increment_pc();
+		  }
 		  break;
 
 		case 0x6: // Set
