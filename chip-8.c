@@ -367,11 +367,19 @@ uint16_t decode_and_exec(uint16_t instr) {
 			  break;
 			
 			/* Ambiguous instructions */
-			case 0x55:
-			  printf("Store instruction");
+			case 0x55: // FX55
+			  // Store the value of each variable register from V0 to VX inclusive in contiguous memory addresses starting from I.
+			  //printf("Store instruction");
+			  for (int i = 0; i <= X; i++) {
+			  	c8_state.memory[c8_state.I_reg + i] = c8_state.V_reg[i];
+			  }
 			  break;
-			case 0x65:
-			  printf("Load instruction");
+			case 0x65: // FX65 - Different behavior on the COSMAC VIP
+			  // Read values from memory and load them into variable registers from V0 to VX inclusive
+			  //printf("Load instruction");
+			  for (int i = 0; i <= X; i++) {
+			  	c8_state.V_reg[i] = c8_state.memory[c8_state.I_reg + i];
+			  }
 			  break;
 		  }
 		  break;
