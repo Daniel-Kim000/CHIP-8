@@ -353,8 +353,17 @@ uint16_t decode_and_exec(uint16_t instr) {
 			case 0x29:
 			  printf("Font character instruction");
 			  break;
-			case 0x33:
-			  printf("Binary-coded decimal conversion instruction");
+			case 0x33: // FX33
+			  // Take the number in V[X] (which would be a number from 0 - 255 because its a uint8_t) and converts it to three decimal digits that are placed in memory contiguously, from I.
+			  /* Example: V[X] = 123
+			    123 / 100 = 1       -> memory[I]
+			    (123 / 10) % 10 = 2 -> memory[I + 1]
+			    123 % 10 = 3        -> memory[I + 2]
+			  */
+			  //printf("Binary-coded decimal conversion instruction");
+			  c8_state.memory[c8_state.I_reg] = c8_state.V_reg[X] / 100;
+			  c8_state.memory[c8_state.I_reg + 1] = (c8_state.V_reg[X] / 10) % 10;
+			  c8_state.memory[c8_state.I_reg + 2] = c8_state.V_reg[X] % 10;
 			  break;
 			
 			/* Ambiguous instructions */
