@@ -243,14 +243,31 @@ uint16_t decode_and_exec(uint16_t instr) {
 			  c8_state.V_regs[X] = c8_state.V_regs[X] + c8_state.V_regs[Y];
 			  break;
 
-			case 5:
-			  printf("Subtract instruction: VX = VX - VY \n");
+			case 5: // 8XY5
+			  // VX = VX - VY; if VX >= VY, VF = 1; VF = 0 otherwise
+			  //printf("Subtract instruction: VX = VX - VY \n");
+			  if (c8_state.V_regs[X] >= c8_state.V_regs[Y]) {
+			  	c8_state.V_regs[15] = 1;
+			  }
+			  else {
+			  	c8_state.V_regs[15] = 0;
+			  }
+			  c8_state.V_regs[X] = c8_state.V_regs[X] - c8_state.V_regs[Y];
 			  break;
-			case 7:
-			  printf("Subtract instruction: VX = VY - VX \n");
+			case 7: // 8XY7
+			  // VX = VY - VX; if VY >= VX, VF = 1; VF = 0 otherwise
+			  //printf("Subtract instruction: VX = VY - VX \n");
+			  if (c8_state.V_regs[Y] >= c8_state.V_regs[X]) {
+			  	c8_state.V_regs[15] = 1;
+			  }
+			  else {
+			  	c8_state.V_regs[15] = 0;
+			  }
+			  c8_state.V_regs[X] = c8_state.V_regs[Y] - c8_state.V_regs[X];
 			  break;
 			/* Ambiguous instructions: */
-			case 6: // look more into this later
+			// Maybe let the user choose what kind of setting to use?
+			case 6: // look more into this later 
 			  printf("Shift instruction \n");
 			  break;
 			case 0xE: // look more into this later
