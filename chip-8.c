@@ -163,7 +163,10 @@ uint16_t decode_and_exec(uint16_t instr) {
 		  c8_state.PC = NNN;
 		  break;
 		case 0x2: // Call subroutine
-		  printf("Call subroutine instruction \n");
+		  // Push PC to the stack and then set PC = NNN
+		  //printf("Call subroutine instruction \n");
+		  
+
 		  break;
 
 		case 0x3: // Skip conditionally
@@ -249,16 +252,22 @@ uint16_t decode_and_exec(uint16_t instr) {
 		  uint8_t Y_coord = c8_state.V_regs[Y] % 32;
 		  c8_state.V_regs[15] = 0; // Set the VF flag to 0; doing so will make it obvious if it was raised in this instruction
 		  for (int i = 0; i < N; i++) {  // Fetch the sprite data from memory[I + 0] to memory[I + N-1]
-			uint8_t sprite_data = c8_state.memory[c8_state.I_reg + i]; // Each sprite is 8 bits - every bit of this variable counts!
+			uint8_t sprite_row = c8_state.memory[c8_state.I_reg + i]; // Each sprite is 8 bits wide - every bit of this variable counts!
 			for (int j = 0; j < 8; j++) { // Iterate over all 8 bits of a row of the sprite
-				uint8_t sprite_pixel = (sprite_data >> (7 - j)) & 1; // extract a bit of this sprite, from left to right
-				if ((sprite_pixel == 1) && c8_state.display_buffer[X_coord][Y_coord]) { // If the the current pixel in the sprite row is on and the pixel at (X,Y) in the display buffer is on,
-											       // then turn off the pixel and VF = 1
-					c8_state.display_buffer[X_coord][Y_coord] = 0;
+				uint8_t sprite_pixel = (sprite_row >> (7 - j)) & 1; // extract a bit of this sprite, from left to right
+				if (X_coord + j >= 64) { // If the desired row is going to exceed the length of the display, stop drawing this row
+					break;
+				}
+				else if ((sprite_pixel == 1) && c8_state.display_buffer[X_coord + j][Y_coord + i] == 1) { // If the the current pixel in the sprite row is on and the pixel at (X,Y) in the display buffer is on
+					c8_state.display_buffer[X_coord + j][Y_coord + i] = 0;
 					c8_state.V_regs[15] = 1;
 				}
-				//if (c8_state.display_buffer[i][j] == 1 && 
-				//c8_state.display_buffer[i][j] = c8_state.display_buffer[i][j] ^ 
+				else if (sprite_pixel == 1) { // If the current pixel in the sprite row is on and the pixel at (X,Y) in the display buffer is off
+					c8_state.display_buffer[X_coord + j][Y_coord + i] = 1;
+				}
+		  	}
+			if (Y_coord + i >= 32) { // If the next sprite row is going to exceed the height of the display, stop drawing the sprite entirely
+				break;
 			}
 		  }
 		  break;
