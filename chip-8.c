@@ -331,8 +331,13 @@ uint16_t decode_and_exec(uint16_t instr) {
 			  	increment_pc();
 			  }
 			  break;
-			case 0xA1:
-			  printf("Skip instruction if key corresponding to VX's value is not pressed");
+			case 0xA1: // EXA1
+			  //printf("Skip instruction if key corresponding to VX's value is not pressed");
+			  // Skip the next instruction if the key corresponding to VX's value is not pressed
+			  uint8_t key = c8_state.V_regs[X] & 0x0F;
+			  if (c8_state.input[key] == 0) {
+			  	increment_pc();
+			  }
 			  break;
 		  }
 		  break;
