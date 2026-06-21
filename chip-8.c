@@ -347,14 +347,20 @@ uint16_t decode_and_exec(uint16_t instr) {
 		case 0xF:
 		  switch (NN) {
 		  	/* Timer manipulation instructions */
-		  	case 0x07:
-			  printf("Set VX to the current value of the delay timer");
+		  	case 0x07: // FX07
+			  //printf("Set VX to the current value of the delay timer");
+			  // Sets VX to the current value of the delay timer
+			  c8_state.V_regs[X] = c8_state.delay_timer;
 			  break;
-			case 0x15:
-			  printf("Set the delay timer to the value in VX");
+			case 0x15: // FX15
+			  //printf("Set the delay timer to the value in VX");
+			  // Sets the delay timer to the value in VX
+			  c8_state.delay_timer = c8_state.V_regs[X];
 			  break;
-			case 0x18:
-			  printf("Set the sound timer to the value in VX");
+			case 0x18: // FX18
+			  //printf("Set the sound timer to the value in VX");
+			  // Sets the sound timer to the value in VX
+			  c8_state.sound_timer = c8_state.V_regs[X];
 			  break;
 
 			case 0x1E:
