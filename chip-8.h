@@ -36,6 +36,8 @@ int open_rom(char file_name[]);
 // Increments the PC by 2 since on each fetch, 2 values are read
 void increment_pc();	
 
+void decrement_pc();
+
 // Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
 uint16_t fetch();
 

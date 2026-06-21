@@ -105,6 +105,10 @@ void increment_pc() {
 	c8_state.PC = c8_state.PC + 2; 
 }
 
+void decrement_pc() {
+	c8_state.PC = c8_state.PC - 2;
+}
+
 // Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
 uint16_t fetch() {
 	// Each instruction is 2 bytes (16 bits), so we will need to fetch two entries from memory
@@ -322,11 +326,11 @@ uint16_t decode_and_exec(uint16_t instr) {
 		  }
 		  break;
 		case 0xE:
+		  uint8_t key = c8_state.V_regs[X] & 0x0F; // Done so we can make sure that whatever the keypress is, its some number from 0 to 15
 		  switch (NN) {
 			case 0x9E: // EX9E
 			  // Skip the next instruction if the key corresponding to VX's value is pressed
 			  //printf("Skip instruction if key corresponding to VX's value is pressed");
-			  uint8_t key = c8_state.V_regs[X] & 0x0F; // Done so we can make sure that whatever the keypress is, its some number from 0 to 15
 			  if (c8_state.input[key]) {
 			  	increment_pc();
 			  }
@@ -334,7 +338,6 @@ uint16_t decode_and_exec(uint16_t instr) {
 			case 0xA1: // EXA1
 			  //printf("Skip instruction if key corresponding to VX's value is not pressed");
 			  // Skip the next instruction if the key corresponding to VX's value is not pressed
-			  uint8_t key = c8_state.V_regs[X] & 0x0F;
 			  if (c8_state.input[key] == 0) {
 			  	increment_pc();
 			  }
@@ -357,8 +360,19 @@ uint16_t decode_and_exec(uint16_t instr) {
 			case 0x1E:
 			  printf("Add to index instruction");
 			  break;
-			case 0x0A:
-			  printf("Get key instruction");
+			case 0x0A: // FX0A
+			  //printf("Get key instruction");
+			  // Blocking instruction, waits for key input. Decrement PC unless a key is pressed. Store which key was pressed in V[X]
+			  // Can simulate a block by not letting the PC go past this instruction.
+			  // Note: on the COSMAC VIP, the key was only registered when it was pressed and then released.
+			  decrement_pc(); // Assume that no key is pressed
+			  for (int i = 0; i < 16; i++) { // Check if any key is pressed
+				if (c8_state.input[i]) {
+					c8_state.V_regs[X] = i;
+					increment_pc(); // Since a key is pressed, we can allow the instruction to pass
+					break;
+				}
+			  }
 			  break;
 			case 0x29:
 			  printf("Font character instruction");
