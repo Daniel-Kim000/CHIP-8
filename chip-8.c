@@ -363,8 +363,11 @@ uint16_t decode_and_exec(uint16_t instr) {
 			  c8_state.sound_timer = c8_state.V_regs[X];
 			  break;
 
-			case 0x1E:
-			  printf("Add to index instruction");
+			case 0x1E: // FX1E
+			  //printf("Add to index instruction");
+			  // Index register I has VX added to it
+			  // Optional: Set VF to 1 if index register I overflows from 0xFFF to above 1000; though this is not the behavior on the COSMAC VIP, many interpreters do this.
+			  c8_state.I_reg = c8_state.I_reg + c8_state.V_regs[X];
 			  break;
 			case 0x0A: // FX0A
 			  //printf("Get key instruction");
@@ -380,8 +383,12 @@ uint16_t decode_and_exec(uint16_t instr) {
 				}
 			  }
 			  break;
-			case 0x29:
-			  printf("Font character instruction");
+			case 0x29: // FX29
+			  //printf("Font character instruction");
+			  // Index register I is set to the memory address of the font sprite for the hex digit that is stored in V[X]
+			  // Each font sprite is 5 bytes and the font starts from 0x050
+			  uint8_t digit = c8_state.V_regs[X] & 0x0F; // Ensure that the extracted digit is from 0 - 15
+			  c8_state.I_reg = (5 * digit) + 0x050;
 			  break;
 			case 0x33: // FX33
 			  // Take the number in V[X] (which would be a number from 0 - 255 because its a uint8_t) and converts it to three decimal digits that are placed in memory contiguously, from I.
