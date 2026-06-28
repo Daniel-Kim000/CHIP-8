@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "chip-8.h"
 
@@ -284,12 +285,22 @@ uint16_t decode_and_exec(uint16_t instr) {
 		  // printf("Set index instruction \n");
 		  c8_state.I_reg = NNN;
 		  break;
+
 		/* Ambiguous instruction: */
-		case 0xB:
-		  printf("Jump with offset instruction \n");
+		case 0xB: // BNNN (or BXNN)
+		  //printf("Jump with offset instruction \n");
+		  // On the original COSMAC VIP, this instruction jumped to address NNN + value in V0
+		  // In CHIP-48 and SUPER-CHIP, this address becomes BXNN; this instruction jumps to address XNN + value in VX
+		  // For the sake of simplicity, this insntruction will default to the original COSMAC VIP implementation
+		  c8_state.PC = NNN + c8_state.V_regs[0];
 		  break;
-		case 0xC:
-		  printf("Random number generator instruction \n");
+
+		case 0xC: // CXNN
+		  //printf("Random number generator instruction \n");
+		  // Generate a random number and then binary AND it with the value NN and put the result in VX
+		  srand(time(NULL)); // Seed the RNG based on the current time
+		  int random = rand() % 256; // Generate random number from 0 - 255 
+		  c8_state.V_regs[X] = random & NN; // this is done to limit the range of random numbers if desired
 		  break;
 		case 0xD: // DXYN
 		  /*
