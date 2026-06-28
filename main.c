@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 int main(void) {
 	setup_state();

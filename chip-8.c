@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <time.h>
+#include <pthread.h>
+#include <unistd.h>
 
 #include "chip-8.h"
 
@@ -81,7 +83,7 @@ int open_rom(char file_name[]) {
 	printf("Read %zu chars from the file\n", chars_read);
 	
 	// Display the instructions of the ROM (if needed)
-	printf("Read from left to right, going downwards: \n");
+	printf("\nFetched Rom Instructions: \nRead from left to right, going downwards: \n");
 	int cols = 0;
 	for (int i = 0; i < rom_size && i < chars_read; i += 2) {
 		uint16_t instr = (buffer[i] << 8) | (buffer[i + 1]);
@@ -92,7 +94,7 @@ int open_rom(char file_name[]) {
 			cols = 0;
 		}
 	}
-	printf("\n");
+	printf("\n\n");
 	memcpy(&c8_state.memory[0x200], buffer, rom_size);
 	//printf("%02x\n", c8_state.memory[0x200]); // print the first byte
 
@@ -110,6 +112,10 @@ void decrement_pc() {
 	c8_state.PC = c8_state.PC - 2;
 }
 
+// Thread function for decrementing the sound and delay timer
+void* timer_thread_function(void* arg) {
+
+}
 // Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
 uint16_t fetch() {
 	// Each instruction is 2 bytes (16 bits), so we will need to fetch two entries from memory

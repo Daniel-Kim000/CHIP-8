@@ -7,6 +7,9 @@
 #include <signal.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <time.h>
+#include <unistd.h>
+#include <pthread.h>
 
 /* A struct that has values for the entire hardware state of the CHIP-8 */
 typedef struct {
@@ -37,6 +40,11 @@ int open_rom(char file_name[]);
 void increment_pc();	
 
 void decrement_pc();
+
+// Thread function for decrementing the sound and delay timer
+void* timer_thread_function(void* arg) {
+
+}
 
 // Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
 uint16_t fetch();
