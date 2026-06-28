@@ -272,11 +272,18 @@ uint16_t decode_and_exec(uint16_t instr) {
 			  break;
 			/* Ambiguous instructions: */
 			// Maybe let the user choose what kind of setting to use?
-			case 6: // look more into this later 
-			  printf("Shift instruction \n");
-			  break;
-			case 0xE: // look more into this later
-			  printf("Shift instruction \n");
+			// On the original COSMAC VIP, these instructions did: VX = VY and then shifted VX by 1 bit to the right/left; VF would be set to the bit that was shifted out
+			// On CHIP-48 and SUPER-CHIP, these instructions shifted VX in place and ignored VY completely
+			// This program will default to the modern behavior, since most ROMs made after the 90s use the modern behavior
+			case 6: // 8XY6
+			  //printf("Shift right instruction \n");
+			  c8_state.V_regs[15] = c8_state.V_regs[X] & 1; // put the least significant bit into VF
+			  c8_state.V_regs[X] = c8_state.V_regs[X] >> 1;
+			  break; 
+			case 0xE: // 8XYE
+			  //printf("Shift left instruction \n");
+			  c8_state.V_regs[15] = (c8_state.V_regs[X] >> 7) & 1; // put the most significcant bit into VF
+			  c8_state.V_regs[X] = c8_state.V_regs[X] << 1;
 			  break;
 		  }
 		  break;
