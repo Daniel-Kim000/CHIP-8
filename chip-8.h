@@ -42,6 +42,13 @@ void increment_pc();
 void decrement_pc();
 
 // Thread function for decrementing the sound and delay timer
+/* Simulating a 60 Hz Timer:
+	sleep the thread for 16.67 milliseconds (roughly the same as 60 Hz)
+	lock mutex
+	decrement both timers if > 0 and beep if needed
+	unlock mutex
+	repeat!
+*/
 void* timer_thread_function(void* arg);
 
 
@@ -61,4 +68,7 @@ uint16_t fetch();
 
 */
 uint16_t decode_and_exec(uint16_t instr); 
+
+// Cleans up anything when the emulator is to be closed
+int cleanup();
 #endif

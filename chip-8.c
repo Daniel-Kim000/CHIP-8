@@ -395,20 +395,27 @@ uint16_t decode_and_exec(uint16_t instr) {
 		case 0xF:
 		  switch (NN) {
 		  	/* Timer manipulation instructions */
+			// For each manipulation or read of the delay timer, the timer_mutex is locked before it and unlocked after
 		  	case 0x07: // FX07
 			  //printf("Set VX to the current value of the delay timer");
 			  // Sets VX to the current value of the delay timer
+			  pthread_mutex_lock(&timer_mutex);
 			  c8_state.V_regs[X] = c8_state.delay_timer;
+			  pthread_mutex_unlock(&timer_mutex);
 			  break;
 			case 0x15: // FX15
 			  //printf("Set the delay timer to the value in VX");
 			  // Sets the delay timer to the value in VX
+			  pthread_mutex_lock(&timer_mutex);
 			  c8_state.delay_timer = c8_state.V_regs[X];
+			  pthread_mutex_unlock(&timer_mutex);
 			  break;
 			case 0x18: // FX18
 			  //printf("Set the sound timer to the value in VX");
 			  // Sets the sound timer to the value in VX
+			  pthread_mutex_lock(&timer_mutex);
 			  c8_state.sound_timer = c8_state.V_regs[X];
+			  pthread_mutex_unlock(&timer_mutex);
 			  break;
 
 			case 0x1E: // FX1E
@@ -472,4 +479,17 @@ uint16_t decode_and_exec(uint16_t instr) {
 		  printf("Unknown instruction: %04X\n, instr");
 	}
 	return 0;	
+}
+
+
+// Cleans up anything when the emulator is to be closed
+int cleanup() {
+	timer_thread_running = false;
+	
+	pthread_join(timer_thread, NULL); // Waits for timer_thread to finish whatever its doing
+	int result = pthread_mutex_destroy(&timer_mutex);
+	if (result != 0) {
+		return 1;	
+	}
+	return 0;
 }
