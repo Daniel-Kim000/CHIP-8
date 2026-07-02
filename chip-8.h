@@ -42,9 +42,8 @@ void increment_pc();
 void decrement_pc();
 
 // Thread function for decrementing the sound and delay timer
-void* timer_thread_function(void* arg) {
+void* timer_thread_function(void* arg);
 
-}
 
 // Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
 uint16_t fetch();

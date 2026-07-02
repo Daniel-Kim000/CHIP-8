@@ -24,6 +24,9 @@
 
 
 static chip_8_state_t c8_state = {0};
+pthread_mutex_t timer_mutex = PTHREAD_MUTEX_INITIALIZER;
+bool timer_thread_running;
+pthread_t timer_thread;
 
 /* Sets up some values in the state */
 int setup_state() {
@@ -58,6 +61,8 @@ int setup_state() {
 	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 	};
 	memcpy(&c8_state.memory[0x050], font_data, 80); // Copy the entire font data into memory, starting at 0x050.
+	timer_thread_running = true;
+	pthread_create(&timer_thread, NULL, timer_thread_function, NULL);
 	return 0;
 }
 
@@ -113,8 +118,27 @@ void decrement_pc() {
 }
 
 // Thread function for decrementing the sound and delay timer
+/* Simulating a 60 Hz Timer:
+	sleep the thread for 16.67 milliseconds (roughly the same as 60 Hz)
+	lock mutex
+	decrement both timers if > 0 and beep if needed
+	unlock mutex
+	repeat!
+*/
 void* timer_thread_function(void* arg) {
-
+	while (timer_thread_running) {
+		usleep(16670); // 16670 microseconds = 16.67 milliseconds
+		pthread_mutex_lock(&timer_mutex);
+		if (c8_state.sound_timer > 0) {
+			c8_state.sound_timer--;	
+		}
+		if (c8_state.delay_timer > 0) {
+			c8_state.delay_timer--;
+			// TODO: implement beep
+		}
+		pthread_mutex_unlock(&timer_mutex);
+	}
+	return NULL;
 }
 // Fetches memory[PC] and memory[PC + 1] to create a full, 16-bit instruction
 uint16_t fetch() {
