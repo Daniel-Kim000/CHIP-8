@@ -484,6 +484,7 @@ uint16_t decode_and_exec(uint16_t instr) {
 
 // Cleans up anything when the emulator is to be closed
 int cleanup() {
+	/* Threading Cleanup: */
 	timer_thread_running = false;
 	
 	pthread_join(timer_thread, NULL); // Waits for timer_thread to finish whatever its doing
@@ -491,5 +492,8 @@ int cleanup() {
 	if (result != 0) {
 		return 1;	
 	}
+	
+	/* SDL Cleanup: */
+
 	return 0;
 }
