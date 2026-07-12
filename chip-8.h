@@ -32,6 +32,7 @@ typedef struct {
 // Sets up some initial values in the state
 int setup_state();
 
+
 // Loads a rom based on a file_name in the ./tests/ directory
 int open_rom(char file_name[]);
 

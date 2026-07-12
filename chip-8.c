@@ -8,7 +8,6 @@
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
-
 #include "chip-8.h"
 
 // CHIP-8 Interpreter ^^
@@ -65,6 +64,23 @@ int setup_state() {
 	pthread_create(&timer_thread, NULL, timer_thread_function, NULL);
 	return 0;
 }
+// Sets up SDL
+/*void SDL_setup() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD) == false) {
+        printf("SDL Error: %s\n", SDL_GetError());
+    }
+
+    // Take a closer look at making the SDL_Window. somehow, this needs to be destroyed in cleanup(); find a way to pass the memory address to the window.
+    SDL_Window = SDL_CreateWindow(
+            "CHIP-8 Interpreter",
+            640, // The display window is normally 64 x 32, but for the sake of this project, it will be upscaled by 10x
+            320,
+            SDL_WINDOW_RESIZABLE
+    );
+    if (SDL_Window == NULL) {
+        printf("SDL Error: %s\n", SDL_GetError());
+    }
+}*/
 
 /* Opens a .ch8 file based on a given file_name */
 // might wanna make this a bit more secure down the line since strings in C are a bit interesting...
@@ -491,9 +507,7 @@ int cleanup() {
 	int result = pthread_mutex_destroy(&timer_mutex);
 	if (result != 0) {
 		return 1;	
-	}
-	
-	/* SDL Cleanup: */
+    }
 
-	return 0;
+    return 0;
 }
