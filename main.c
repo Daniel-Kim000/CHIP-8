@@ -58,22 +58,22 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         return SDL_APP_FAILURE;
     }
 
-    SDL_APP_CONTINUE;
+    return SDL_APP_CONTINUE;
 }
 
 // Runs once every frame
 SDL_AppResult SDL_AppIterate(void* appstate) {
     AppState* state = (AppState*)appstate;
-	uint16_t instr = fetch();
-	printf("Fetched Instruction: %04X \n", instr);
-	increment_pc();		
-	decode_and_exec(instr);
+    uint16_t instr = fetch();
+    printf("Fetched Instruction: %04X \n", instr);
+    increment_pc();		
+    decode_and_exec(instr);
     
     /*SDL_Texture* texture = SDL_CreateTexture(
         state->renderer
     );*/
 
-    SDL_SetRenderDrawColor(0, 0, 0, 255); // Set backbuffer color to black
+    SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255); // Set backbuffer color to black
     SDL_RenderClear(state->renderer);   // Clear screen with the backbuffer (do we need this?)
     // Draw/render calls go here
     /* Ideas for drawing to the screen:
@@ -85,6 +85,21 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         * Call function from chip8.c that returns the display buffer (or just get it somehow)
         * For each entry, if it's equal to 1, set that pixel's 10x10 area to white using RenderFillRect; otherwise, set it to black
     */
+    uint8_t* display_buffer = get_display_buffer();
+    for (int j = 0; j < 32; j++) {
+        for (int i = 0; i < 64; i++) {
+            uint8_t pixel = display_buffer[(i * 64) + j];
+            if (pixel == 1) {
+                SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);   
+            }
+            else {
+                SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+            }
+            SDL_Rect scaled_pixel = {i * 10, j * 10, 10, 10}; // Scale pixel up by 10x since we are on a 10x scale display
+            SDL_RenderFillRect(state->renderer, &scaled_pixel);
+        }
+    }
+
     SDL_RenderPresent(state->renderer); // Push backbuffer to display
     return SDL_APP_CONTINUE;
 }

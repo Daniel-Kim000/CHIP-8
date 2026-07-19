@@ -126,11 +126,17 @@ int open_rom(char file_name[]) {
 
 // Increments the PC by 2 since on each fetch, 2 values are read
 void increment_pc() {	
-	c8_state.PC = c8_state.PC + 2; 
+	c8_state.PC = c8_state.PC + 2;
+    printf("PC: %d\n", c8_state.PC);
 }
 
 void decrement_pc() {
 	c8_state.PC = c8_state.PC - 2;
+}
+
+// Returns the memory address of the display buffer (the first element, that is)
+uint8_t* get_display_buffer() {
+    return &c8_state.display_buffer[0][0];
 }
 
 // Thread function for decrementing the sound and delay timer
@@ -365,7 +371,8 @@ uint16_t decode_and_exec(uint16_t instr) {
 		     Be sure to allow coordinates to wrap: an X coordinate of 4 is equal to an X coordinate of 68 (because 68 % 64 = 4)
 		     The sprite should not wrap around if it goes beyond the border, it should just be clipped
 		  */
-		  // printf("Display control instruction \n");
+		  printf("DXYN: Drawing at I=0x%03X, coords=(%d,%d), height=%d\n", 
+           c8_state.I_reg, c8_state.V_regs[X], c8_state.V_regs[Y], N);
 		  uint8_t X_coord = c8_state.V_regs[X] % 64;
 		  uint8_t Y_coord = c8_state.V_regs[Y] % 32;
 		  c8_state.V_regs[15] = 0; // Set the VF flag to 0; doing so will make it obvious if it was raised in this instruction

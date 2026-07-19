@@ -42,6 +42,9 @@ void increment_pc();
 
 void decrement_pc();
 
+// Returns the memory address fo the display buffer
+uint8_t* get_display_buffer();
+
 // Thread function for decrementing the sound and delay timer
 /* Simulating a 60 Hz Timer:
 	sleep the thread for 16.67 milliseconds (roughly the same as 60 Hz)
