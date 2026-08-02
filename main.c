@@ -141,7 +141,29 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
        }
     }
     else if (event->type == SDL_EVENT_KEY_UP) {
-        
+       switch (key) {
+            case SDLK_1: update_input_array(0, false); break;
+            case SDLK_2: update_input_array(1, false); break;
+            case SDLK_3: update_input_array(2, false); break;
+            case SDLK_4: update_input_array(3, false); break;
+
+            case SDLK_Q: update_input_array(4, false); break;
+            case SDLK_W: update_input_array(5, false); break;
+            case SDLK_E: update_input_array(6, false); break;
+            case SDLK_R: update_input_array(7, false); break;
+
+            case SDLK_A: update_input_array(8, false); break;
+            case SDLK_S: update_input_array(9, false); break;
+            case SDLK_D: update_input_array(10, false); break;
+            case SDLK_F: update_input_array(11, false); break;
+
+            case SDLK_Z: update_input_array(12, false); break;
+            case SDLK_X: update_input_array(13, false); break;
+            case SDLK_C: update_input_array(14, false); break;
+            case SDLK_V: update_input_array(15, false); break;
+
+       }
+ 
     }
     return SDL_APP_CONTINUE;
 }

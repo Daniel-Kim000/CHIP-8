@@ -10,6 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 /* A struct that has values for the entire hardware state of the CHIP-8 */
 typedef struct {

@@ -64,31 +64,18 @@ int setup_state() {
 	pthread_create(&timer_thread, NULL, timer_thread_function, NULL);
 	return 0;
 }
-// Sets up SDL
-/*void SDL_setup() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD) == false) {
-        printf("SDL Error: %s\n", SDL_GetError());
-    }
 
-    // Take a closer look at making the SDL_Window. somehow, this needs to be destroyed in cleanup(); find a way to pass the memory address to the window.
-    SDL_Window = SDL_CreateWindow(
-            "CHIP-8 Interpreter",
-            640, // The display window is normally 64 x 32, but for the sake of this project, it will be upscaled by 10x
-            320,
-            SDL_WINDOW_RESIZABLE
-    );
-    if (SDL_Window == NULL) {
-        printf("SDL Error: %s\n", SDL_GetError());
-    }
-}*/
 
 /* Opens a .ch8 file based on a given file_name */
 // might wanna make this a bit more secure down the line since strings in C are a bit interesting...
 int open_rom(char file_name[]) {
 	// For the time being, only open up /tests/1-chip8-logo.ch8
-	
-	FILE* rom = fopen("./tests/1-chip8-logo.ch8", "rb");
-	if (rom == NULL) {
+	//FILE* rom = fopen("./tests/1-chip8-logo.ch8", "rb");
+    //FILE* rom = fopen("./tests/2-ibm-logo.ch8", "rb");
+    //FILE* rom = fopen("./tests/3-corax+.ch8", "rb");
+    //FILE* rom = fopen("./tests/4-flags.ch8", "rb"); // TODO: Fix flag logic according to test
+	FILE* rom = fopen("/tests/6-keypad.ch8", "rb");
+    if (rom == NULL) {
 		printf("File read error");
 	}
 	fseek(rom, 0L, SEEK_END);
@@ -112,7 +99,6 @@ int open_rom(char file_name[]) {
 		cols += 1;
 		if (cols == 8) {
 			printf("\n");
-    AppState* state = (AppState*)appstate;
 			cols = 0;
 		}
 	}
