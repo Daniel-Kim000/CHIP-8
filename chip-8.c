@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include "chip-8.h"
 
-// CHIP-8 Interpreter ^^
+// CHIP-8 Interpreter
 // Notes:
 // Use SDL when doing graphical stuff and detecting keypresses.
 // Timers should be decremented by one 60 times per second (i.e. at 60Hz).
@@ -112,6 +112,7 @@ int open_rom(char file_name[]) {
 		cols += 1;
 		if (cols == 8) {
 			printf("\n");
+    AppState* state = (AppState*)appstate;
 			cols = 0;
 		}
 	}
@@ -127,7 +128,7 @@ int open_rom(char file_name[]) {
 // Increments the PC by 2 since on each fetch, 2 values are read
 void increment_pc() {	
 	c8_state.PC = c8_state.PC + 2;
-    printf("PC: %d\n", c8_state.PC);
+    //printf("PC: %d\n", c8_state.PC);
 }
 
 void decrement_pc() {
@@ -139,6 +140,15 @@ uint8_t* get_display_buffer() {
     return &c8_state.display_buffer[0][0];
 }
 
+// Updates the input array based on what index and if it is pressed down or released
+void update_input_array(int index, bool pressed) {
+    if (pressed) {
+        c8_state.input[index] = 1;
+    }
+    else {
+        c8_state.input[index] = 0;
+    }
+}
 // Thread function for decrementing the sound and delay timer
 /* Simulating a 60 Hz Timer:
 	sleep the thread for 16.67 milliseconds (roughly the same as 60 Hz)

@@ -50,7 +50,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
             SDL_WINDOW_RESIZABLE,
             &state->window,
             &state->renderer
-    ) == NULL) {
+    ) == false) {
         return SDL_APP_FAILURE;
     }
     setup_state();
@@ -65,7 +65,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 SDL_AppResult SDL_AppIterate(void* appstate) {
     AppState* state = (AppState*)appstate;
     uint16_t instr = fetch();
-    printf("Fetched Instruction: %04X \n", instr);
+    //printf("Fetched Instruction: %04X \n", instr);
     increment_pc();		
     decode_and_exec(instr);
     
@@ -88,23 +88,61 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     uint8_t* display_buffer = get_display_buffer();
     for (int j = 0; j < 32; j++) {
         for (int i = 0; i < 64; i++) {
-            uint8_t pixel = display_buffer[(i * 64) + j];
+            uint8_t pixel = display_buffer[(i * 32) + j];
             if (pixel == 1) {
                 SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);   
             }
             else {
                 SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
             }
-            SDL_Rect scaled_pixel = {i * 10, j * 10, 10, 10}; // Scale pixel up by 10x since we are on a 10x scale display
+        
+            SDL_FRect scaled_pixel = {(float)i * 10, (float)j * 10, 10.0f, 10.0f}; // Scale pixel up by 10x since we are on a 10x scale display
             SDL_RenderFillRect(state->renderer, &scaled_pixel);
         }
     }
+    /*// TEST: draw a fixed white square, unrelated to CHIP-8 state
+    SDL_SetRenderDrawColor(state->renderer, 255, 255, 255, 255);
+    SDL_FRect test_rect = {100.0f, 100.0f, 50.0f, 50.0f};
+    SDL_RenderFillRect(state->renderer, &test_rect);
+    */
 
     SDL_RenderPresent(state->renderer); // Push backbuffer to display
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
+SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) { 
+    AppState* state = (AppState*)appstate;
+    SDL_Keycode key = (event->key).key;
+    if (event->type == SDL_EVENT_QUIT) {
+        return SDL_APP_SUCCESS;
+    }
+    else if (event->type == SDL_EVENT_KEY_DOWN) {
+       switch (key) {
+            case SDLK_1: update_input_array(0, true); break;
+            case SDLK_2: update_input_array(1, true); break;
+            case SDLK_3: update_input_array(2, true); break;
+            case SDLK_4: update_input_array(3, true); break;
+
+            case SDLK_Q: update_input_array(4, true); break;
+            case SDLK_W: update_input_array(5, true); break;
+            case SDLK_E: update_input_array(6, true); break;
+            case SDLK_R: update_input_array(7, true); break;
+
+            case SDLK_A: update_input_array(8, true); break;
+            case SDLK_S: update_input_array(9, true); break;
+            case SDLK_D: update_input_array(10, true); break;
+            case SDLK_F: update_input_array(11, true); break;
+
+            case SDLK_Z: update_input_array(12, true); break;
+            case SDLK_X: update_input_array(13, true); break;
+            case SDLK_C: update_input_array(14, true); break;
+            case SDLK_V: update_input_array(15, true); break;
+
+       }
+    }
+    else if (event->type == SDL_EVENT_KEY_UP) {
+        
+    }
     return SDL_APP_CONTINUE;
 }
 
