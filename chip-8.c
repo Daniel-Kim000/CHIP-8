@@ -73,8 +73,8 @@ int open_rom(char file_name[]) {
 	//FILE* rom = fopen("./tests/1-chip8-logo.ch8", "rb");
     //FILE* rom = fopen("./tests/2-ibm-logo.ch8", "rb");
     //FILE* rom = fopen("./tests/3-corax+.ch8", "rb");
-    FILE* rom = fopen("./tests/4-flags.ch8", "rb"); // TODO: Fix flag logic according to test
-	//FILE* rom = fopen("/tests/6-keypad.ch8", "rb");
+    //FILE* rom = fopen("./tests/4-flags.ch8", "rb"); // TODO: Fix flag logic according to test
+	FILE* rom = fopen("./tests/6-keypad.ch8", "rb");
     if (rom == NULL) {
 		printf("File read error");
 	}
