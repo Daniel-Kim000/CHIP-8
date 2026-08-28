@@ -73,8 +73,8 @@ int open_rom(char file_name[]) {
 	//FILE* rom = fopen("./tests/1-chip8-logo.ch8", "rb");
     //FILE* rom = fopen("./tests/2-ibm-logo.ch8", "rb");
     //FILE* rom = fopen("./tests/3-corax+.ch8", "rb");
-    //FILE* rom = fopen("./tests/4-flags.ch8", "rb"); // TODO: Fix flag logic according to test
-	FILE* rom = fopen("/tests/6-keypad.ch8", "rb");
+    FILE* rom = fopen("./tests/4-flags.ch8", "rb"); // TODO: Fix flag logic according to test
+	//FILE* rom = fopen("/tests/6-keypad.ch8", "rb");
     if (rom == NULL) {
 		printf("File read error");
 	}
@@ -191,6 +191,7 @@ uint16_t decode_and_exec(uint16_t instr) {
 	uint8_t N = (instr & 0x000F);
 	uint8_t NN = (instr & 0x00FF);
 	uint16_t NNN = (instr & 0x0FFF);
+    uint8_t flag = 0;
 
 	switch (instr >> 12) {
 		case 0x0: // Clear or return from subroutine
@@ -286,38 +287,40 @@ uint16_t decode_and_exec(uint16_t instr) {
 			case 4: // 8XY4
 			  // If the result of adding these two registers exceeds the 8-bit integer limit of 255, set the flag register to 1
 			  //printf("Add instruction with X and Y \n");
-			  int result = c8_state.V_regs[X] + c8_state.V_regs[Y];
+			  uint16_t result = c8_state.V_regs[X] + c8_state.V_regs[Y];
+			  c8_state.V_regs[X] = result;
 			  if (result > 255) { 
 			  	c8_state.V_regs[15] = 1;
 			  }
 			  else {
 			  	c8_state.V_regs[15] = 0;
 			  }
-			  c8_state.V_regs[X] = c8_state.V_regs[X] + c8_state.V_regs[Y];
 			  break;
 
 			case 5: // 8XY5
 			  // VX = VX - VY; if VX >= VY, VF = 1; VF = 0 otherwise
 			  //printf("Subtract instruction: VX = VX - VY \n");
 			  if (c8_state.V_regs[X] >= c8_state.V_regs[Y]) {
-			  	c8_state.V_regs[15] = 1;
+			  	flag = 1;
 			  }
 			  else {
-			  	c8_state.V_regs[15] = 0;
+			  	flag = 0;
 			  }
 			  c8_state.V_regs[X] = c8_state.V_regs[X] - c8_state.V_regs[Y];
-			  break;
+			  c8_state.V_regs[15] = flag;
+              break;
 			case 7: // 8XY7
 			  // VX = VY - VX; if VY >= VX, VF = 1; VF = 0 otherwise
 			  //printf("Subtract instruction: VX = VY - VX \n");
 			  if (c8_state.V_regs[Y] >= c8_state.V_regs[X]) {
-			  	c8_state.V_regs[15] = 1;
+			  	flag = 1;
 			  }
 			  else {
-			  	c8_state.V_regs[15] = 0;
+			    flag = 0;
 			  }
 			  c8_state.V_regs[X] = c8_state.V_regs[Y] - c8_state.V_regs[X];
-			  break;
+			  c8_state.V_regs[15] = flag;
+              break;
 			/* Ambiguous instructions: */
 			// Maybe let the user choose what kind of setting to use?
 			// On the original COSMAC VIP, these instructions did: VX = VY and then shifted VX by 1 bit to the right/left; VF would be set to the bit that was shifted out
@@ -325,14 +328,16 @@ uint16_t decode_and_exec(uint16_t instr) {
 			// This program will default to the modern behavior, since most ROMs made after the 90s use the modern behavior
 			case 6: // 8XY6
 			  //printf("Shift right instruction \n");
-			  c8_state.V_regs[15] = c8_state.V_regs[X] & 1; // put the least significant bit into VF
+			  flag = c8_state.V_regs[X] & 1; // put the least significant bit into VF
 			  c8_state.V_regs[X] = c8_state.V_regs[X] >> 1;
+              c8_state.V_regs[15] = flag;
 			  break; 
 			case 0xE: // 8XYE
 			  //printf("Shift left instruction \n");
-			  c8_state.V_regs[15] = (c8_state.V_regs[X] >> 7) & 1; // put the most significcant bit into VF
+			  flag = (c8_state.V_regs[X] >> 7) & 1; // put the most significant bit into VF
 			  c8_state.V_regs[X] = c8_state.V_regs[X] << 1;
-			  break;
+			  c8_state.V_regs[15] = flag;
+              break;
 		  }
 		  break;
 		case 0xA:
